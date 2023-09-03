@@ -25,9 +25,9 @@ type UserRouter struct {
 
 var SECRET_KEY = []byte("gosecretkey")
 
-func (ur *UserRouter) HandleFunc(w http.ResponseWriter, r *http.Request) {
+/* func (ur *UserRouter) HandleFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Bienvenidos a Geochat Backend con SQL")
-}
+} */
 
 func getHash(pwd []byte) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.DefaultCost)
@@ -128,7 +128,7 @@ func (ur *UserRouter) Routes() http.Handler {
 
 	// Configurar el middleware CORS para permitir todas las solicitudes desde cualquier origen
 
-	r.Get("/", ur.HandleFunc)
+	//r.Get("/", ur.HandleFunc)
 	r.Post("/login", ur.UserLogin)
 	r.Post("/", ur.UserSignup) // http://localhost:9000/api/v2/users/
 	//r.Get("/{id}", ur.GetOneHandler)
