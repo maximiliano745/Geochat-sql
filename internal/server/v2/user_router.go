@@ -17,8 +17,10 @@ import (
 
 	"github.com/github.com/maximiliano745/Geochat-sql/pkg/response"
 	"github.com/github.com/maximiliano745/Geochat-sql/pkg/user"
+	"github.com/github.com/maximiliano745/Geochat-sql/pkg/websocket"
 	"github.com/go-chi/chi"
 	"golang.org/x/crypto/bcrypt"
+	//"github.com/github.com/maximiliano745/Geochat-sql/pkg/websocket"
 )
 
 type UserRouter struct {
@@ -154,16 +156,38 @@ func (ur *UserRouter) UserSignup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
+	fmt.Println("----------------  WebSocket Endpoint Hit -------------------")
+	conn, err := websocket.Upgrade(w, r)
+	if err != nil {
+		fmt.Fprintf(w, "%+v\n", err)
+	}
+
+	client := &websocket.Client{
+		Conn: conn,
+		Pool: pool,
+	}
+
+	pool.Register <- client
+	client.Read()
+}
+
 // ****************     Definiendo rutas    ************************
 func (ur *UserRouter) Routes() http.Handler {
 	r := chi.NewRouter()
 
 	// Configurar el middleware CORS para permitir todas las solicitudes desde cualquier origen
 
-	//r.Get("/", ur.HandleFunc)
 	r.Post("/login", ur.UserLogin)
-	r.Post("/", ur.UserSignup) // http://localhost:9000/api/v2/users/
+	r.Post("/", ur.UserSignup) // 9000/api/v2/users/
 	r.Post("/api/user/mail", ur.UserMail)
+
+	pool := websocket.NewPool()
+	go pool.Start()
+
+	r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(pool, w, r)
+	})
 
 	//r.Get("/{id}", ur.GetOneHandler)
 	//r.Put("/{id}", ur.UpdateHandler)
