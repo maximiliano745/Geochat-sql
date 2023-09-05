@@ -20,7 +20,6 @@ import (
 	"github.com/github.com/maximiliano745/Geochat-sql/pkg/websocket"
 	"github.com/go-chi/chi"
 	"golang.org/x/crypto/bcrypt"
-	//"github.com/github.com/maximiliano745/Geochat-sql/pkg/websocket"
 )
 
 type UserRouter struct {
@@ -28,10 +27,6 @@ type UserRouter struct {
 }
 
 var SECRET_KEY = []byte("gosecretkey")
-
-/* func (ur *UserRouter) HandleFunc(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Bienvenidos a Geochat Backend con SQL")
-} */
 
 func getHash(pwd []byte) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.DefaultCost)
@@ -185,7 +180,7 @@ func (ur *UserRouter) Routes() http.Handler {
 	pool := websocket.NewPool()
 	go pool.Start()
 
-	r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+	r.Post("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(pool, w, r)
 	})
 
