@@ -5,9 +5,11 @@ import (
 
 	"encoding/json"
 	"fmt"
+	"log"
 
 	//"log"
 	"net/http"
+	"net/smtp"
 
 	//"time"
 
@@ -35,6 +37,36 @@ func getHash(pwd []byte) (string, error) {
 		return "", err
 	}
 	return string(hash), nil
+}
+
+func (ur *UserRouter) UserMail(w http.ResponseWriter, r *http.Request) {
+	var u user.User
+	err := json.NewDecoder(r.Body).Decode(&u)
+
+	if err != nil {
+		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	defer r.Body.Close()
+
+	fmt.Println("**** ACA ESTAMOS EN EL EMAIL   ******")
+
+	auth := smtp.PlainAuth("", "maxiargento745@gmail.com", "rwkycxemzftxidxi", "smtp.gmail.com")
+
+	to := []string{u.Email}
+	msg := []byte("To: " + u.Email + "\r\n" +
+		"Subject: Geochat..!!!\r\n" +
+		"\r\n" +
+		"Esto es la Invitacion de Contacto de GEOCHAT  ---------------->   " + "")
+	err = smtp.SendMail("smtp.gmail.com:587", auth, "maxiargento745@gmail.com", to, msg)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+
+		fmt.Println("Email enviado con exito...!!!!!")
+	}
+
 }
 
 func (ur *UserRouter) UserLogin(w http.ResponseWriter, r *http.Request) {
@@ -131,6 +163,8 @@ func (ur *UserRouter) Routes() http.Handler {
 	//r.Get("/", ur.HandleFunc)
 	r.Post("/login", ur.UserLogin)
 	r.Post("/", ur.UserSignup) // http://localhost:9000/api/v2/users/
+	r.Post("/api/user/mail", ur.UserMail)
+
 	//r.Get("/{id}", ur.GetOneHandler)
 	//r.Put("/{id}", ur.UpdateHandler)
 	//r.Delete("/{id}", ur.DeleteHandler)
