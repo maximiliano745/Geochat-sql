@@ -55,7 +55,7 @@ func (ur *UserRouter) UserMail(w http.ResponseWriter, r *http.Request) {
 	msg := []byte("To: " + u.Email + "\r\n" +
 		"Subject: Geochat..!!!\r\n" +
 		"\r\n" +
-		"Esto es la Invitacion de Contacto de GEOCHAT  ---------------->   " + "")
+		"Esto es la Invitacion de Contacto de GEOCHAT  ---------------->   " + "https://maxi-geochat.onrender.com/")
 	err = smtp.SendMail("smtp.gmail.com:587", auth, "maxiargento745@gmail.com", to, msg)
 	if err != nil {
 		log.Fatal(err)
