@@ -106,6 +106,9 @@ func (ur *UserRouter) UserLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ur *UserRouter) UserSignup(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("BACKEND GEOCHAT....!!!")
+	w.Write([]byte(`{"BACKEND GEOCHAT....!!!"}`))
+
 	var u, uu user.User
 	err := json.NewDecoder(r.Body).Decode(&u)
 
@@ -180,7 +183,7 @@ func (ur *UserRouter) Routes() http.Handler {
 	pool := websocket.NewPool()
 	go pool.Start()
 
-	r.Post("/ws", func(w http.ResponseWriter, r *http.Request) {
+	r.Post("/wss", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(pool, w, r)
 	})
 
