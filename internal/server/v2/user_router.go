@@ -107,7 +107,7 @@ func (ur *UserRouter) UserLogin(w http.ResponseWriter, r *http.Request) {
 
 func (ur *UserRouter) UserSignup(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("BACKEND GEOCHAT....!!!")
-	w.Write([]byte(`{"BACKEND GEOCHAT....!!!"}`))
+	//w.Write([]byte(`{"BACKEND GEOCHAT....!!!"}`))
 
 	var u, uu user.User
 	err := json.NewDecoder(r.Body).Decode(&u)
@@ -170,6 +170,13 @@ func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
 	client.Read()
 }
 
+func (ur *UserRouter) Sock(w http.ResponseWriter, r *http.Request) {
+	pool := websocket.NewPool()
+	go pool.Start()
+	serveWs(pool, w, r)
+
+}
+
 // ****************     Definiendo rutas    ************************
 func (ur *UserRouter) Routes() http.Handler {
 	r := chi.NewRouter()
@@ -180,12 +187,14 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/", ur.UserSignup) // 9000/api/v2/users/
 	r.Post("/api/user/mail", ur.UserMail)
 
-	pool := websocket.NewPool()
-	go pool.Start()
+	//pool := websocket.NewPool()
+	//go pool.Start()
 
-	r.Post("/wss", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(pool, w, r)
-	})
+	r.Post("/wss", ur.Sock) // api/v2/users/wss
+
+	//r.Post("/wss", func(w http.ResponseWriter, r *http.Request) {
+	//	serveWs(pool, w, r)
+	//})
 
 	//r.Get("/{id}", ur.GetOneHandler)
 	//r.Put("/{id}", ur.UpdateHandler)
