@@ -170,11 +170,10 @@ func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
 	client.Read()
 }
 
-func (ur *UserRouter) Sock(w http.ResponseWriter, r *http.Request) {
+func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	pool := websocket.NewPool()
 	go pool.Start()
 	serveWs(pool, w, r)
-
 }
 
 // ****************     Definiendo rutas    ************************
@@ -184,21 +183,10 @@ func (ur *UserRouter) Routes() http.Handler {
 	// Configurar el middleware CORS para permitir todas las solicitudes desde cualquier origen
 
 	r.Post("/login", ur.UserLogin)
-	r.Post("/", ur.UserSignup) // 9000/api/v2/users/
+	r.Post("/", ur.UserSignup) // 5555/api/v2/users/
 	r.Post("/api/user/mail", ur.UserMail)
 
-	//pool := websocket.NewPool()
-	//go pool.Start()
-
-	r.Post("/wss", ur.Sock) // api/v2/users/wss
-
-	//r.Post("/wss", func(w http.ResponseWriter, r *http.Request) {
-	//	serveWs(pool, w, r)
-	//})
-
-	//r.Get("/{id}", ur.GetOneHandler)
-	//r.Put("/{id}", ur.UpdateHandler)
-	//r.Delete("/{id}", ur.DeleteHandler)
+	r.Get("/ws", websocketHandler)
 
 	return r
 }
