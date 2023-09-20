@@ -170,9 +170,9 @@ func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
 	client.Read()
 }
 
-func websocketHandler(w http.ResponseWriter, r *http.Request) {
-	pool := websocket.NewPool()
-	go pool.Start()
+func websocketHandler(w http.ResponseWriter, r *http.Request, pool *websocket.Pool) {
+	//pool := websocket.NewPool()
+	//go pool.Start()
 	serveWs(pool, w, r)
 }
 
@@ -186,7 +186,13 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/", ur.UserSignup) // 5555/api/v2/users/
 	r.Post("/api/user/mail", ur.UserMail)
 
-	r.Get("/wss", websocketHandler)
+	pool := websocket.NewPool()
+	go pool.Start()
+	r.Get("/wss", func(w http.ResponseWriter, r *http.Request) {
+		websocketHandler(w, r, pool)
+	})
+
+	//r.Get("/ws", ur.websocketHandler)
 
 	return r
 }
