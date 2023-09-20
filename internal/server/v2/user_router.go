@@ -186,7 +186,7 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/", ur.UserSignup) // 5555/api/v2/users/
 	r.Post("/api/user/mail", ur.UserMail)
 
-	r.Get("/ws", websocketHandler)
+	r.Get("/wss", websocketHandler)
 
 	return r
 }
