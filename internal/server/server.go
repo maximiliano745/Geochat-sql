@@ -56,6 +56,6 @@ func (serv *Server) Close() error {
 // Start the server.
 func (serv *Server) Start() {
 
-	log.Printf("Servidor ejecutándose en http://localhost%s", serv.server.Addr)
+	log.Printf("Servidor ejecutándose en... : %s", serv.server.Addr)
 	log.Fatal(serv.server.ListenAndServe())
 }
