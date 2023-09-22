@@ -8,6 +8,7 @@ import (
 
 	v1 "github.com/github.com/maximiliano745/Geochat-sql/internal/server/v1"
 	v2 "github.com/github.com/maximiliano745/Geochat-sql/internal/server/v2"
+	v3 "github.com/github.com/maximiliano745/Geochat-sql/internal/server/v3"
 	"github.com/go-chi/chi"
 	"github.com/rs/cors"
 )
@@ -29,11 +30,14 @@ func New(port string) (*Server, error) {
 
 	r.Use(c.Handler) // Aplicar el middleware CORS al enrutador
 
-	// API routes version 1.
+	// API Para MI VER.
 	r.Mount("/api/v1", v1.New())
 
-	// API routes version 1.
+	// API routes version 1 Todos X ACA.
 	r.Mount("/api/v2", v2.New())
+
+	// API NATIVE.
+	r.Mount("/api/v3", v3.New())
 
 	serv := &http.Server{
 		Addr:         ":" + port,
