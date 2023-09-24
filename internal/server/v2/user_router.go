@@ -183,7 +183,7 @@ func (ur *UserRouter) Routes() http.Handler {
 	// Configurar el middleware CORS para permitir todas las solicitudes desde cualquier origen
 
 	r.Post("/login", ur.UserLogin)
-	r.Post("/", ur.UserSignup) // 5555/api/v2/users/status
+	r.Post("/register", ur.UserSignup) // api/v2/users/
 	r.Post("/api/user/mail", ur.UserMail)
 
 	pool := websocket.NewPool()
@@ -191,6 +191,8 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Get("/wss", func(w http.ResponseWriter, r *http.Request) {
 		websocketHandler(w, r, pool)
 	})
-
+	/* r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+		websocketHandler(w, r, pool)
+	}) */
 	return r
 }
