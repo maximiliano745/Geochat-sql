@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS users;
+--DROP TABLE IF EXISTS users;
 CREATE TABLE IF NOT EXISTS users (
     id serial NOT NULL,
     username VARCHAR(150) NOT NULL ,
