@@ -86,7 +86,7 @@ func (ur *UserRouter) UserLogin(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(" OK!!, Email EXISTENTE....!!!")
 		w.Write([]byte(`{"OK!!, Email EXISTENTE....!!!"}`))
 		//w.WriteHeader(http.StatusOK)
-		fmt.Println("Nombre:", uu.Username, "     ID:", uu.ID, "      Password:", uu.Password, "    Email:", uu.Email, "   First_Name:", uu.FirstName, "   Last_Name:", uu.LastName)
+		fmt.Println("Nombre:", uu.Username, "     ID:", uu.ID, "      Password:", uu.Password, "    Email:", uu.Email)
 		fmt.Println("Revisando Contraseña.....", u.Password, "     ", uu.Hash)
 
 		if uu.PasswordMatch(u.Password) {
@@ -106,13 +106,12 @@ func (ur *UserRouter) UserLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ur *UserRouter) UserSignup(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("BACKEND GEOCHAT....!!!")
-	//w.Write([]byte(`{"BACKEND GEOCHAT....!!!"}`))
-
+	fmt.Println("\n *** ACA ESTAMOS EN EL REGISTRO DE USUAROIOS ****\nn")
 	var u, uu user.User
 	err := json.NewDecoder(r.Body).Decode(&u)
 
 	if err != nil {
+		fmt.Print(err)
 		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -123,7 +122,7 @@ func (ur *UserRouter) UserSignup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	uu, err = ur.Repository.GetByMail(ctx, uu.Email)
 	if err == nil {
-		fmt.Println("Error Email EXISTENTE....!!!")
+		fmt.Println("\nError Email EXISTENTE....!!!")
 		w.Write([]byte(`{"Error Email EXISTENTE....!!!"}`))
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -147,7 +146,7 @@ func (ur *UserRouter) UserSignup(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			fmt.Println("USUARIO CREADO CON  EXITO...!!!!: ")
-			fmt.Println("Nombre:", u.Username, "     ID:", u.ID, "      Password:", u.Password, "    Email:", u.Email, "   First_Name:", u.FirstName, "   Last_Name:", u.LastName)
+			fmt.Println("Nombre:", u.Username, "     ID:", u.ID, "      Password:", u.Password, "    Email:", u.Email)
 			w.Write([]byte(`{"USUARIO CREADO CON  EXITO...!!!!"}`))
 			w.WriteHeader(http.StatusOK)
 		}
@@ -183,16 +182,16 @@ func (ur *UserRouter) Routes() http.Handler {
 	// Configurar el middleware CORS para permitir todas las solicitudes desde cualquier origen
 
 	r.Post("/login", ur.UserLogin)
-	r.Post("/register", ur.UserSignup) // api/v2/users/
+	r.Post("/register", ur.UserSignup) // /api/v2/users/
 	r.Post("/api/user/mail", ur.UserMail)
 
 	pool := websocket.NewPool()
 	go pool.Start()
-	r.Get("/wss", func(w http.ResponseWriter, r *http.Request) {
-		websocketHandler(w, r, pool)
-	})
-	/* r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+	/* r.Get("/wss", func(w http.ResponseWriter, r *http.Request) {
 		websocketHandler(w, r, pool)
 	}) */
+	r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+		websocketHandler(w, r, pool)
+	})
 	return r
 }

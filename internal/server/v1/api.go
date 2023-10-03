@@ -15,19 +15,11 @@ func New() http.Handler {
 			Data: data.New(),
 		},
 	}
-	r.Mount("/users", ur.Routes()) //  http://localhost:9000/api/v1/users/
+	r.Mount("/Maxi", ur.Routes()) //  http://localhost:10000/api/v1/Maxi/
 
 	/* las rutas que definimos dentro de Routes ahora tendrán como base /users , por ejemplo, para el caso de
-	r.Get("/", ur.GetAllHandler), la ruta será /users/
+	r.Get("/", ur.GetAllHandler), la ruta será /Maxi/
 	*/
-
-	/* pr := &PostRouter{
-	       Repository: &data.PostRepository{
-	           Data: data.New(),
-	       },
-	   }
-
-	r.Mount("/posts", pr.Routes()) */
 
 	return r
 }

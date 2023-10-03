@@ -17,6 +17,7 @@ type UserRouter struct {
 
 // Crear Usuario
 func (ur *UserRouter) CreateHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Print("Aca estamos en CREAR Usuario\n")
 	var u user.User
 	err := json.NewDecoder(r.Body).Decode(&u)
 	if err != nil {
@@ -27,6 +28,7 @@ func (ur *UserRouter) CreateHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	ctx := r.Context()
+	fmt.Print("\n---------------- > Pasword: " + u.Password)
 	err = ur.Repository.Create(ctx, &u)
 	if err != nil {
 		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
@@ -40,6 +42,7 @@ func (ur *UserRouter) CreateHandler(w http.ResponseWriter, r *http.Request) {
 
 // Obtener usuarios
 func (ur *UserRouter) GetAllHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Aca estamos en el Get de Maxi.....")
 	ctx := r.Context()
 
 	users, err := ur.Repository.GetAll(ctx)
@@ -124,7 +127,7 @@ func (ur *UserRouter) DeleteHandler(w http.ResponseWriter, r *http.Request) {
 func (ur *UserRouter) Routes() http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/", ur.GetAllHandler)
+	r.Get("/", ur.GetAllHandler) //  http://localhost:9000/api/v1/Maxi/  GET
 	r.Post("/", ur.CreateHandler)
 	r.Get("/{id}", ur.GetOneHandler)
 	r.Put("/{id}", ur.UpdateHandler)
