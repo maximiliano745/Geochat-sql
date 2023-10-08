@@ -23,7 +23,7 @@ func (pool *Pool) Start() {
 		select {
 		case client := <-pool.Register:
 			pool.Clients[client] = true
-			fmt.Println("Tamaño del grupo de conexiones: ", len(pool.Clients))
+			fmt.Println("\nTamaño del grupo de conexiones: ", len(pool.Clients))
 			for client := range pool.Clients {
 				fmt.Println(client)
 				//client.Conn.WriteJSON(Message{Type: 1, Body: "Nuevo usuario unido ..."})
@@ -32,14 +32,14 @@ func (pool *Pool) Start() {
 			//break
 		case client := <-pool.Unregister:
 			delete(pool.Clients, client)
-			fmt.Println("Tamaño del grupo de conexiones: ", len(pool.Clients))
+			fmt.Println("\nTamaño del grupo de conexiones: ", len(pool.Clients))
 			for client := range pool.Clients {
 				//client.Conn.WriteJSON(Message{Type: 1, Body: "Usuario Desconectado..."})
 				client.Conn.WriteJSON("Usuario Desconectado...")
 			}
 			//break
 		case message := <-pool.Broadcast:
-			fmt.Println("Envío de mensaje a todos los clientes en Pool")
+			fmt.Println("\nEnvío de mensaje a todos los clientes en Pool")
 			for client := range pool.Clients {
 				if err := client.Conn.WriteJSON(message.Body); err != nil {
 					fmt.Println(err)

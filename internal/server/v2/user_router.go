@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sync"
+	"time"
 
 	//"log"
 	"net/http"
@@ -15,6 +17,7 @@ import (
 
 	//"strconv"
 
+	//"github.com/github.com/maximiliano745/Geochat-sql/internal/data"
 	"github.com/github.com/maximiliano745/Geochat-sql/pkg/response"
 	"github.com/github.com/maximiliano745/Geochat-sql/pkg/user"
 	"github.com/github.com/maximiliano745/Geochat-sql/pkg/websocket"
@@ -36,32 +39,65 @@ func getHash(pwd []byte) (string, error) {
 	return string(hash), nil
 }
 
-func (ur *UserRouter) UserMail(w http.ResponseWriter, r *http.Request) {
-	var u user.User
-	err := json.NewDecoder(r.Body).Decode(&u)
+func (ur *UserRouter) HaciendoTarea() {
+	for {
+		//fmt.Println("Realizando tarea: Fijandome los Pedidos de Amistad...")
+		ur.Repository.ConsultaPedidosContacto()
+		time.Sleep(3 * time.Second)
+	}
+}
 
+func (ur *UserRouter) UserMail(w http.ResponseWriter, r *http.Request) {
+
+	var request struct {
+		Email   string `json:"email"`
+		Name    string `json:"name"`
+		Message string `json:"message"`
+		Otro    string `json:"Otro"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
-
 	defer r.Body.Close()
-
+	fmt.Println("\n\n\n ")
 	fmt.Println("**** ACA ESTAMOS EN EL EMAIL   ******")
-
+	fmt.Println("Mail del que manda---> ", request.Otro)
 	auth := smtp.PlainAuth("", "maxiargento745@gmail.com", "rwkycxemzftxidxi", "smtp.gmail.com")
 
-	to := []string{u.Email}
-	msg := []byte("To: " + u.Email + "\r\n" +
-		"Subject: Geochat..!!!\r\n" +
+	to := []string{request.Email}
+	msg := []byte("Enviado por: " + request.Otro + "\r\n" +
+		"Desde: Geochat..!!!\r\n" +
 		"\r\n" +
-		"Esto es la Invitacion de Contacto de GEOCHAT  ---------------->   " + "https://maxi-geochat.onrender.com/")
+		"Esto es la Invitacion de Contacto de GEOCHAT de: " + request.Otro + "---------------->   " + "https://maxi-geochat.onrender.com/" + "\n" + request.Message)
 	err = smtp.SendMail("smtp.gmail.com:587", auth, "maxiargento745@gmail.com", to, msg)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error:  --> ", err)
 	} else {
 
 		fmt.Println("Email enviado con exito...!!!!!")
+		ctx := r.Context()
+
+		// Obtener el primer usuario por correo electrónico
+		userOfrece, err := ur.Repository.GetByMail(ctx, request.Email)
+		if err != nil {
+			// Manejar el error, por ejemplo, devolver un error HTTP o registrar un error
+			return
+		}
+
+		// Obtener el segundo usuario por correo electrónico
+		userAcepta, err := ur.Repository.GetByMail(ctx, request.Otro)
+		if err != nil {
+			// Manejar el error
+			return
+		}
+
+		err = ur.Repository.AgregaPedidoAmistad(ctx, userOfrece.ID, userAcepta.ID)
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
 	}
 
 }
@@ -77,7 +113,7 @@ func (ur *UserRouter) UserLogin(w http.ResponseWriter, r *http.Request) {
 
 	uu = u
 	defer r.Body.Close()
-
+	fmt.Println("\n\n\n ")
 	fmt.Println("**** ACA ESTAMOS EN EL LOGIN   ******")
 
 	ctx := r.Context()
@@ -106,6 +142,7 @@ func (ur *UserRouter) UserLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ur *UserRouter) UserSignup(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("\n\n\n ")
 	fmt.Println("\n *** ACA ESTAMOS EN EL REGISTRO DE USUAROIOS ****\nn")
 	var u, uu user.User
 	err := json.NewDecoder(r.Body).Decode(&u)
@@ -154,6 +191,7 @@ func (ur *UserRouter) UserSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
+	fmt.Println("\n\n\n ")
 	fmt.Println("----------------  WebSocket Endpoint Hit -------------------")
 	conn, err := websocket.Upgrade(w, r)
 	if err != nil {
@@ -179,7 +217,23 @@ func websocketHandler(w http.ResponseWriter, r *http.Request, pool *websocket.Po
 func (ur *UserRouter) Routes() http.Handler {
 	r := chi.NewRouter()
 
-	// Configurar el middleware CORS para permitir todas las solicitudes desde cualquier origen
+	//go ur.HaciendoTarea()
+	// Crea un WaitGroup para esperar a que ambas tareas terminen antes de salir
+	var wg sync.WaitGroup
+
+	// Inicia la tarea HaciendoTarea en segundo plano
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		ur.HaciendoTarea()
+	}()
+
+	// Inicia la tarea ConsultaPedidosContacto en segundo plano
+	// wg.Add(1)
+	// go func() {
+	// 	defer wg.Done()
+	// 	ur.UserRepository.ConsultaPedidosContacto()
+	// }()
 
 	r.Post("/login", ur.UserLogin)
 	r.Post("/register", ur.UserSignup) // /api/v2/users/
@@ -187,11 +241,17 @@ func (ur *UserRouter) Routes() http.Handler {
 
 	pool := websocket.NewPool()
 	go pool.Start()
+
 	r.Get("/wss", func(w http.ResponseWriter, r *http.Request) {
 		websocketHandler(w, r, pool)
 	})
-	/* r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
-		websocketHandler(w, r, pool)
-	}) */
+
+	// r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+	// 	websocketHandler(w, r, pool)
+	// })
+
+	// Espera a que las tareas terminen
+	//wg.Wait() No necesita porque el Main esta en segindo plano...
+
 	return r
 }

@@ -42,7 +42,7 @@ func (ur *UserRouter) CreateHandler(w http.ResponseWriter, r *http.Request) {
 
 // Obtener usuarios
 func (ur *UserRouter) GetAllHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Aca estamos en el Get de Maxi.....")
+	fmt.Println("\n\n\nAca estamos en el Get de Maxi.....")
 	ctx := r.Context()
 
 	users, err := ur.Repository.GetAll(ctx)

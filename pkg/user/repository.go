@@ -8,7 +8,10 @@ type Repository interface {
 	GetOne(ctx context.Context, id uint) (User, error)
 
 	GetByUsername(ctx context.Context, username string) (User, error)
+
 	GetByMail(ctx context.Context, email string) (User, error) // ------------- MIO --------------
+	AgregaPedidoAmistad(ctx context.Context, emailOfrece, emailAcepta uint) error
+	ConsultaPedidosContacto()
 
 	Create(ctx context.Context, user *User) error
 	Update(ctx context.Context, id uint, user User) error

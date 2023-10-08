@@ -9,15 +9,33 @@ CREATE TABLE IF NOT EXISTS users (
     hash varchar(256) ,
     CONSTRAINT pk_users PRIMARY KEY(id)
 );
--- DROP TABLE IF EXISTS posts;
-/* 
-CREATE TABLE IF NOT EXISTS posts (
+-- DROP TABLE IF EXISTS user_groups;
+CREATE TABLE IF NOT EXISTS user_groups (
     id serial NOT NULL,
-    user_id int NOT NULL,
-    body text NOT NULL,
+    group_name VARCHAR(150) NOT NULL,
+    description TEXT,
     created_at timestamp DEFAULT now(),
     updated_at timestamp NOT NULL,
-    CONSTRAINT pk_notes PRIMARY KEY(id),
-    CONSTRAINT fk_posts_users FOREIGN KEY(user_id) REFERENCES users(id)
+    CONSTRAINT pk_user_groups PRIMARY KEY(id)
 );
- */
+
+-- DROP TABLE IF EXISTS user_group_membership;
+CREATE TABLE IF NOT EXISTS user_group_membership (
+    user_id serial NOT NULL,
+    group_id serial NOT NULL,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES user_groups (id),
+    CONSTRAINT pk_user_group_membership PRIMARY KEY (user_id, group_id)
+);
+
+-- Crear la tabla PedidosContactos
+CREATE TABLE IF NOT EXISTS PedidosContactos (
+    id serial NOT NULL,
+    idusuarioofrece serial NOT NULL,
+    idusuarioacepta serial NOT NULL,
+    estado boolean DEFAULT false,
+    CONSTRAINT pk_PedidosContactos PRIMARY KEY(id),
+    CONSTRAINT fk_usuario_ofrece FOREIGN KEY (idusuarioofrece) REFERENCES users (id),
+    CONSTRAINT fk_usuario_acepta FOREIGN KEY (idusuarioacepta) REFERENCES users (id)
+);
+
