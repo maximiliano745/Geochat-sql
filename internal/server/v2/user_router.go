@@ -47,6 +47,63 @@ func (ur *UserRouter) HaciendoTarea() {
 	}
 }
 
+func (ur *UserRouter) VerContactos(w http.ResponseWriter, r *http.Request) {
+	//fmt.Println("**** ACA Trayendo los Nombres de los Contactos...   ******")
+	var u user.User
+	err := json.NewDecoder(r.Body).Decode(&u)
+
+	if err != nil {
+		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+	fmt.Print("id: ", u.ID)
+	defer r.Body.Close()
+	ctx := r.Context()
+
+	contactos, err := ur.Repository.GetOne(ctx, u.ID)
+	if err != nil {
+		fmt.Println(err)
+		response.HTTPError(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+	fmt.Print("Contactos: ", contactos.Username)
+
+	// Ahora, escribimos el Username en la respuesta HTTP
+	w.Header().Set("Content-Type", "application/json")
+	responseJSON := map[string]string{"Username": contactos.Username}
+	json.NewEncoder(w).Encode(responseJSON)
+}
+
+func (ur *UserRouter) UserContactos(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("**** ACA Viendo Los Concatsos...   ******")
+
+	var u user.User
+	err := json.NewDecoder(r.Body).Decode(&u)
+
+	if err != nil {
+		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+	fmt.Print("id: ", u.ID)
+
+	defer r.Body.Close()
+
+	ctx := r.Context()
+
+	// Llama a GetContactos para obtener los contactos del usuario
+	contactos, err := ur.Repository.GetContactos(ctx, u.ID)
+	if err != nil {
+		response.HTTPError(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	fmt.Print("Contactos: ", contactos)
+
+	// Envía los contactos como respuesta en formato JSON como un arreglo
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(contactos)
+}
+
 func (ur *UserRouter) UserMail(w http.ResponseWriter, r *http.Request) {
 
 	var request struct {
@@ -118,15 +175,27 @@ func (ur *UserRouter) UserLogin(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	uu, err = ur.Repository.GetByMail(ctx, uu.Email)
+
 	if err == nil {
+		response := map[string]interface{}{
+			"message": "OK!!, Email EXISTENTE....!!!",
+			"name":    uu.Username,
+			"id":      uu.ID,
+		}
 		fmt.Println(" OK!!, Email EXISTENTE....!!!")
-		w.Write([]byte(`{"OK!!, Email EXISTENTE....!!!"}`))
-		//w.WriteHeader(http.StatusOK)
+		resp, err := json.Marshal(response)
+		if err != nil {
+			// Manejar el error de conversión JSON
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		fmt.Println("Nombre:", uu.Username, "     ID:", uu.ID, "      Password:", uu.Password, "    Email:", uu.Email)
 		fmt.Println("Revisando Contraseña.....", u.Password, "     ", uu.Hash)
 
 		if uu.PasswordMatch(u.Password) {
 			fmt.Println("Contraseña correcta")
+			w.Write(resp)
 		} else {
 			fmt.Println("ERROR Contraseña INCORECTA...!!!")
 			w.Write([]byte(`{"ERROR Contraseña INCORECTA...!!!"}`))
@@ -238,6 +307,8 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/login", ur.UserLogin)
 	r.Post("/register", ur.UserSignup) // /api/v2/users/
 	r.Post("/api/user/mail", ur.UserMail)
+	r.Post("/contactos", ur.UserContactos)
+	r.Post("/verContactos", ur.VerContactos)
 
 	pool := websocket.NewPool()
 	go pool.Start()
@@ -249,9 +320,6 @@ func (ur *UserRouter) Routes() http.Handler {
 	// r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
 	// 	websocketHandler(w, r, pool)
 	// })
-
-	// Espera a que las tareas terminen
-	//wg.Wait() No necesita porque el Main esta en segindo plano...
 
 	return r
 }

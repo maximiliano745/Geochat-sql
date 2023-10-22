@@ -56,6 +56,7 @@ func (ur *UserRouter) GetAllHandler(w http.ResponseWriter, r *http.Request) {
 
 // Obtener un usuario
 func (ur *UserRouter) GetOneHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Aca getOneHandler...******************")
 	idStr := chi.URLParam(r, "id")
 
 	id, err := strconv.Atoi(idStr)

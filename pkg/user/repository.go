@@ -12,6 +12,7 @@ type Repository interface {
 	GetByMail(ctx context.Context, email string) (User, error) // ------------- MIO --------------
 	AgregaPedidoAmistad(ctx context.Context, emailOfrece, emailAcepta uint) error
 	ConsultaPedidosContacto()
+	GetContactos(ctx context.Context, id uint) ([]int, error)
 
 	Create(ctx context.Context, user *User) error
 	Update(ctx context.Context, id uint, user User) error

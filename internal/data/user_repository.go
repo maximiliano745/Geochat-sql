@@ -12,6 +12,32 @@ type UserRepository struct {
 	Data *Data
 }
 
+// Recuoerar Contactos
+func (ur *UserRepository) GetContactos(ctx context.Context, id uint) ([]int, error) {
+	var usuarios []int
+	query := `SELECT idusuarioacepta FROM pedidoscontactos WHERE  idusuarioofrece = $1 AND estado = true`
+
+	rows, err := data.DB.QueryContext(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var idusuarioacepta int
+		if err := rows.Scan(&idusuarioacepta); err != nil {
+			return nil, err
+		}
+		usuarios = append(usuarios, idusuarioacepta)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return usuarios, nil
+}
+
 // Consulta de Pedidos de Contactos (false)
 func (ur *UserRepository) ConsultaPedidosContacto() {
 	for {
@@ -135,14 +161,14 @@ func (ur *UserRepository) GetAll(ctx context.Context) ([]user.User, error) {
 // Obtener uno
 func (ur *UserRepository) GetOne(ctx context.Context, id uint) (user.User, error) {
 	q := `
-    SELECT id, username, email, password, created_at, updated_at
+    SELECT id, username, email, pasword, created_at, updated_at
         FROM users WHERE id = $1;
     `
 
 	row := ur.Data.DB.QueryRowContext(ctx, q, id)
 
 	var u user.User
-	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt)
+	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.Password, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		return user.User{}, err
 	}
