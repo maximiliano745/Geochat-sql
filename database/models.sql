@@ -1,4 +1,4 @@
---DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS users;
 CREATE TABLE IF NOT EXISTS users (
     id serial NOT NULL,
     username VARCHAR(150) NOT NULL ,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     hash varchar(256) ,
     CONSTRAINT pk_users PRIMARY KEY(id)
 );
--- DROP TABLE IF EXISTS user_groups;
+DROP TABLE IF EXISTS user_groups;
 CREATE TABLE IF NOT EXISTS user_groups (
     id serial NOT NULL,
     group_name VARCHAR(150) NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS user_groups (
     CONSTRAINT pk_user_groups PRIMARY KEY(id)
 );
 
--- DROP TABLE IF EXISTS user_group_membership;
+DROP TABLE IF EXISTS user_group_membership;
 CREATE TABLE IF NOT EXISTS user_group_membership (
     user_id serial NOT NULL,
     group_id serial NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS user_group_membership (
     CONSTRAINT pk_user_group_membership PRIMARY KEY (user_id, group_id)
 );
 
--- Crear la tabla PedidosContactos
+DROP TABLE IF EXISTS PedidosContactos;
 CREATE TABLE IF NOT EXISTS PedidosContactos (
     id serial NOT NULL,
     idusuarioofrece serial NOT NULL,
