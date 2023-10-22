@@ -119,9 +119,12 @@ func (ur *UserRouter) UserMail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+
 	fmt.Println("\n\n\n ")
 	fmt.Println("**** ACA ESTAMOS EN EL EMAIL   ******")
-	fmt.Println("Mail del que manda---> ", request.Otro)
+
+	fmt.Println("------------->Mail del que manda---> ", request.Email, "Recibe: ", request.Email)
+
 	auth := smtp.PlainAuth("", "maxiargento745@gmail.com", "rwkycxemzftxidxi", "smtp.gmail.com")
 
 	to := []string{request.Email}
@@ -138,19 +141,19 @@ func (ur *UserRouter) UserMail(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
 		// Obtener el primer usuario por correo electrónico
-		userOfrece, err := ur.Repository.GetByMail(ctx, request.Email)
+		userAcepta, err := ur.Repository.GetByMail(ctx, request.Email)
 		if err != nil {
 			// Manejar el error, por ejemplo, devolver un error HTTP o registrar un error
 			return
 		}
 
 		// Obtener el segundo usuario por correo electrónico
-		userAcepta, err := ur.Repository.GetByMail(ctx, request.Otro)
+		userOfrece, err := ur.Repository.GetByMail(ctx, request.Otro)
 		if err != nil {
 			// Manejar el error
 			return
 		}
-
+		fmt.Println("ID Manda:", userOfrece.ID, "  ID Recibe:", userAcepta.ID)
 		err = ur.Repository.AgregaPedidoAmistad(ctx, userOfrece.ID, userAcepta.ID)
 		if err != nil {
 			fmt.Println("Error: ", err)
