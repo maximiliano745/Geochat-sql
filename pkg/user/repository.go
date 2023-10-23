@@ -1,6 +1,8 @@
 package user
 
-import "context"
+import (
+	"context"
+)
 
 // Repository handle the CRUD operations with Users.
 type Repository interface {
@@ -13,6 +15,7 @@ type Repository interface {
 	AgregaPedidoAmistad(ctx context.Context, emailOfrece, emailAcepta uint) error
 	ConsultaPedidosContacto()
 	GetContactos(ctx context.Context, id uint) ([]int, error)
+	//CrearGrupo(ctx context.Context, g Grupo) error
 
 	Create(ctx context.Context, user *User) error
 	Update(ctx context.Context, id uint, user User) error

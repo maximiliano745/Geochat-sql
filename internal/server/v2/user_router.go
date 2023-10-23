@@ -56,7 +56,7 @@ func (ur *UserRouter) VerContactos(w http.ResponseWriter, r *http.Request) {
 		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
-	fmt.Print("id: ", u.ID)
+	fmt.Println("ids..: ", u.ID)
 	defer r.Body.Close()
 	ctx := r.Context()
 
@@ -66,7 +66,7 @@ func (ur *UserRouter) VerContactos(w http.ResponseWriter, r *http.Request) {
 		response.HTTPError(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
-	fmt.Print("Contactos: ", contactos.Username)
+	fmt.Println("Contactos Trayendo: ", contactos.Username)
 
 	// Ahora, escribimos el Username en la respuesta HTTP
 	w.Header().Set("Content-Type", "application/json")
@@ -75,7 +75,7 @@ func (ur *UserRouter) VerContactos(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ur *UserRouter) UserContactos(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("**** ACA Viendo Los Concatsos...   ******")
+	//fmt.Println("**** ACA Viendo Los Concatsos...   ******")
 
 	var u user.User
 	err := json.NewDecoder(r.Body).Decode(&u)
@@ -84,7 +84,7 @@ func (ur *UserRouter) UserContactos(w http.ResponseWriter, r *http.Request) {
 		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
-	fmt.Print("id: ", u.ID)
+	fmt.Println("del id: ", u.ID)
 
 	defer r.Body.Close()
 
@@ -97,7 +97,7 @@ func (ur *UserRouter) UserContactos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Print("Contactos: ", contactos)
+	fmt.Print("Contactos Viendo: ", contactos)
 
 	// Envía los contactos como respuesta en formato JSON como un arreglo
 	w.Header().Set("Content-Type", "application/json")
@@ -285,6 +285,29 @@ func websocketHandler(w http.ResponseWriter, r *http.Request, pool *websocket.Po
 	serveWs(pool, w, r)
 }
 
+func (ur *UserRouter) CrearGrupos(w http.ResponseWriter, r *http.Request) {
+	fmt.Print("\n**** ACA Creando Grupo y Guardando Integrantes   ****** \n")
+
+	var g user.Grupo
+	err := json.NewDecoder(r.Body).Decode(&g)
+	if err != nil {
+		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	fmt.Println("Datos recibidos:")
+	fmt.Println("Nombre del grupo:", g.Nombre)
+	fmt.Println("Contactos:")
+	for _, contacto := range g.Contactos {
+		fmt.Printf("ID: %d, Nombre: %s\n", contacto.ID, contacto.Nombre)
+	}
+	defer r.Body.Close()
+	//ctx := r.Context()
+
+	// Si todo está bien, puedes responder con un mensaje de éxito
+	response.JSON(w, r, http.StatusOK, "Grupo creado exitosamente")
+}
+
 // ****************     Definiendo rutas    ************************
 func (ur *UserRouter) Routes() http.Handler {
 	r := chi.NewRouter()
@@ -312,17 +335,18 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/api/user/mail", ur.UserMail)
 	r.Post("/contactos", ur.UserContactos)
 	r.Post("/verContactos", ur.VerContactos)
+	r.Post("/crearGrupos", ur.CrearGrupos)
 
 	pool := websocket.NewPool()
 	go pool.Start()
 
-	r.Get("/wss", func(w http.ResponseWriter, r *http.Request) {
-		websocketHandler(w, r, pool)
-	})
-
-	// r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+	// r.Get("/wss", func(w http.ResponseWriter, r *http.Request) {
 	// 	websocketHandler(w, r, pool)
 	// })
+
+	r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+		websocketHandler(w, r, pool)
+	})
 
 	return r
 }

@@ -12,7 +12,7 @@ type UserRepository struct {
 	Data *Data
 }
 
-// Recuoerar Contactos
+// Recuperar Contactos
 func (ur *UserRepository) GetContactos(ctx context.Context, id uint) ([]int, error) {
 	var usuarios []int
 	query := `SELECT idusuarioacepta FROM pedidoscontactos WHERE  idusuarioofrece = $1 AND estado = true`
@@ -41,10 +41,6 @@ func (ur *UserRepository) GetContactos(ctx context.Context, id uint) ([]int, err
 // Consulta de Pedidos de Contactos (false)
 func (ur *UserRepository) ConsultaPedidosContacto() {
 	for {
-		//fmt.Println("\n\n\n ")
-		// Coloca aquí el código que deseas que se ejecute cada 3 segundos.
-		//fmt.Println("Verificando y actualizando PedidosContactos...")
-
 		// Consulta la tabla PedidosContactos para obtener registros con estado en false
 		rows, err := data.DB.Query("SELECT idusuarioacepta FROM PedidosContactos WHERE estado = false")
 		if err != nil {

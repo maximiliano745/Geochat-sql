@@ -8,6 +8,16 @@ import (
 )
 
 // User of the system.
+type Grupo struct {
+	Nombre    string     `json:"nombre"`
+	Contactos []Contacto `json:"contactos"`
+}
+
+type Contacto struct {
+	ID     uint   `json:"id"`
+	Nombre string `json:"nombre"`
+}
+
 type User struct {
 	ID        uint      `json:"id,omitempty"`
 	Username  string    `json:"username,omitempty"`
