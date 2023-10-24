@@ -354,13 +354,13 @@ func (ur *UserRouter) Routes() http.Handler {
 	pool := websocket.NewPool()
 	go pool.Start()
 
-	// r.Get("/wss", func(w http.ResponseWriter, r *http.Request) {
-	// 	websocketHandler(w, r, pool)
-	// })
-
-	r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/wss", func(w http.ResponseWriter, r *http.Request) {
 		websocketHandler(w, r, pool)
 	})
+
+	// r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+	// 	websocketHandler(w, r, pool)
+	// })
 
 	return r
 }
