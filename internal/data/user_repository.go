@@ -29,6 +29,21 @@ func (ur *UserRepository) CrGrupo(ctx context.Context, g user.Grupo) (int, error
 		return 0, err
 	}
 
+	fmt.Println("Miemobros a guardar: -------------------> ", g.Contactos)
+	for _, contacto := range g.Contactos {
+		// Suponiendo que el ID del miembro está en contacto.ID
+		idMiembro := contacto.ID
+		q := `
+        INSERT INTO grupo_miembros (id_grupo, id_miembro)
+        VALUES ($1, $2)
+    	`
+		_, err := ur.Data.DB.ExecContext(ctx, q, grupoID, idMiembro)
+		if err != nil {
+			fmt.Println("Error al guardar Miembros del Grupo......", err)
+		} else {
+			fmt.Println("----------- GUARDADO de Contactos al GRUPO EXITOSO......")
+		}
+	}
 	return grupoID, nil
 }
 

@@ -37,3 +37,11 @@ CREATE TABLE IF NOT EXISTS PedidosContactos (
     CONSTRAINT fk_usuario_acepta FOREIGN KEY (idusuarioacepta) REFERENCES users (id)
 );
 
+-- Crear la tabla para la relación entre grupos y miembros
+CREATE TABLE IF NOT EXISTS grupo_miembros (
+    id_grupo serial NOT NULL,
+    id_miembro serial NOT NULL,
+    CONSTRAINT pk_grupo_miembros PRIMARY KEY (id_grupo, id_miembro),
+    FOREIGN KEY (id_grupo) REFERENCES user_groups(id),
+    FOREIGN KEY (id_miembro) REFERENCES users(id)
+);
