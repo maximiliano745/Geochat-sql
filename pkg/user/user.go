@@ -10,6 +10,8 @@ import (
 // User of the system.
 type Grupo struct {
 	Nombre    string     `json:"nombre"`
+	ID        uint       `json:"id"`
+	IDueño    uint       `json:"iddueño"`
 	Contactos []Contacto `json:"contactos"`
 }
 

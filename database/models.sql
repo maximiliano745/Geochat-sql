@@ -15,22 +15,14 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS user_groups (
 -- CREATE TABLE user_groups (
     id serial NOT NULL,
+    iddueño INT NOT NULL,         -- ID del dueño del grupo
     group_name VARCHAR(150) NOT NULL,
-    description TEXT,
     created_at timestamp DEFAULT now(),
     updated_at timestamp NOT NULL,
-    CONSTRAINT pk_user_groups PRIMARY KEY(id)
+    CONSTRAINT pk_user_groups PRIMARY KEY(id),
+    FOREIGN KEY (iddueño) REFERENCES users(id)  -- Restricción de clave externa
 );
 
--- DROP TABLE IF EXISTS user_group_membership;
-CREATE TABLE IF NOT EXISTS user_group_membership (
--- CREATE TABLE  user_group_membership (
-    user_id serial NOT NULL,
-    group_id serial NOT NULL,
-    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id),
-    CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES user_groups (id),
-    CONSTRAINT pk_user_group_membership PRIMARY KEY (user_id, group_id)
-);
 
 -- DROP TABLE IF EXISTS PedidosContactos;
 CREATE TABLE IF NOT EXISTS PedidosContactos (

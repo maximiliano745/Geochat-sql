@@ -15,7 +15,7 @@ type Repository interface {
 	AgregaPedidoAmistad(ctx context.Context, emailOfrece, emailAcepta uint) error
 	ConsultaPedidosContacto()
 	GetContactos(ctx context.Context, id uint) ([]int, error)
-	//CrearGrupo(ctx context.Context, g Grupo) error
+	CrGrupo(ctx context.Context, g Grupo) (int, error)
 
 	Create(ctx context.Context, user *User) error
 	Update(ctx context.Context, id uint, user User) error

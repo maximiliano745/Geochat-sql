@@ -286,7 +286,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request, pool *websocket.Po
 }
 
 func (ur *UserRouter) CrearGrupos(w http.ResponseWriter, r *http.Request) {
-	fmt.Print("\n**** ACA Creando Grupo y Guardando Integrantes   ****** \n")
+	fmt.Print("\n**** ACA Creando Grupo y Guardando Integrantes   ******\n")
 
 	var g user.Grupo
 	err := json.NewDecoder(r.Body).Decode(&g)
@@ -295,14 +295,28 @@ func (ur *UserRouter) CrearGrupos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Datos recibidos:")
-	fmt.Println("Nombre del grupo:", g.Nombre)
-	fmt.Println("Contactos:")
+	fmt.Println("datos: ", g)
+
+	//Inserta el grupo y obtiene su ID
+	grupoID, err := ur.Repository.CrGrupo(r.Context(), g)
+	if err != nil {
+		fmt.Println("Error:", err)
+		response.HTTPError(w, r, http.StatusInternalServerError, err.Error())
+		return
+	} else {
+		fmt.Print("\nGuardado del GRUPO Exitoso....\n")
+	}
+
 	for _, contacto := range g.Contactos {
 		fmt.Printf("ID: %d, Nombre: %s\n", contacto.ID, contacto.Nombre)
 	}
-	defer r.Body.Close()
-	//ctx := r.Context()
+
+	fmt.Print("\nDatos recibidos:\n")
+	fmt.Println("Nombre del grupo:", g.Nombre)
+	fmt.Println("Id del dueño:", g.IDueño)
+	fmt.Println("ID del grupo:", grupoID)
+
+	fmt.Println("")
 
 	// Si todo está bien, puedes responder con un mensaje de éxito
 	response.JSON(w, r, http.StatusOK, "Grupo creado exitosamente")
@@ -323,7 +337,7 @@ func (ur *UserRouter) Routes() http.Handler {
 		ur.HaciendoTarea()
 	}()
 
-	// Inicia la tarea ConsultaPedidosContacto en segundo plano
+	//Inicia la tarea ConsultaPedidosContacto en segundo plano
 	// wg.Add(1)
 	// go func() {
 	// 	defer wg.Done()

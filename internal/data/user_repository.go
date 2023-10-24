@@ -12,6 +12,26 @@ type UserRepository struct {
 	Data *Data
 }
 
+// Guardar Grupos
+func (ur *UserRepository) CrGrupo(ctx context.Context, g user.Grupo) (int, error) {
+	q := `
+        INSERT INTO user_groups (iddueño, group_name, created_at, updated_at)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id;
+    `
+
+	var grupoID int
+	err := ur.Data.DB.QueryRowContext(
+		ctx, q, g.IDueño, g.Nombre, time.Now(), time.Now(),
+	).Scan(&grupoID)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return grupoID, nil
+}
+
 // Recuperar Contactos
 func (ur *UserRepository) GetContactos(ctx context.Context, id uint) ([]int, error) {
 	var usuarios []int
