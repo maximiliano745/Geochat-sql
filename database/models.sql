@@ -11,18 +11,18 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT pk_users PRIMARY KEY(id)
 );
 
-DROP TABLE if exists user_groups cascade;
+-- DROP TABLE if exists user_groups cascade;
 --  DROP TABLE IF EXISTS user_groups;
--- CREATE TABLE IF NOT EXISTS user_groups (
--- -- CREATE TABLE user_groups (
---     id serial NOT NULL,
---     iddueño INT NOT NULL,         -- ID del dueño del grupo
---     group_name VARCHAR(150) NOT NULL,
---     created_at timestamp DEFAULT now(),
---     updated_at timestamp NOT NULL,
---     CONSTRAINT pk_user_groups PRIMARY KEY(id),
---     FOREIGN KEY (iddueño) REFERENCES users(id)  -- Restricción de clave externa
--- );
+CREATE TABLE IF NOT EXISTS user_groups (
+-- CREATE TABLE user_groups (
+    id serial NOT NULL,
+    iddueño INT NOT NULL,         -- ID del dueño del grupo
+    group_name VARCHAR(150) NOT NULL,
+    created_at timestamp DEFAULT now(),
+    updated_at timestamp NOT NULL,
+    CONSTRAINT pk_user_groups PRIMARY KEY(id),
+    FOREIGN KEY (iddueño) REFERENCES users(id)  -- Restricción de clave externa
+);
 
 
 -- DROP TABLE IF EXISTS PedidosContactos;
