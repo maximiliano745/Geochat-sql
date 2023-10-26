@@ -2,6 +2,8 @@ package data
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -44,14 +46,52 @@ func (ur *UserRepository) TraeGrupos(ctx context.Context, id uint) ([]user.Grupo
 
 // Guardar Grupos
 func (ur *UserRepository) CrGrupo(ctx context.Context, g user.Grupo) (int, error) {
+
+	// Obtener la lista de IDs de miembros para el grupo a crear
+	var miembrosIDs []int
+	for _, contacto := range g.Contactos {
+		miembrosIDs = append(miembrosIDs, int(contacto.ID))
+	}
+
+	// Verificar si ya existe un grupo con los mismos miembros
+	var grupoExistenteID int
+	qVerificar := `
+        SELECT id FROM user_groups
+        WHERE iddueño = $1
+    `
+	rows, err := ur.Data.DB.QueryContext(ctx, qVerificar, g.IDueño)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var grupoID int
+		err := rows.Scan(&grupoID)
+		if err != nil {
+			return 0, err
+		}
+
+		// Verificar si el grupo actual tiene los mismos miembros
+		if gruposIguales(ctx, ur.Data.DB, grupoID, miembrosIDs) {
+			grupoExistenteID = grupoID
+			break
+		}
+	}
+
+	if grupoExistenteID != 0 {
+		// Si encontramos un grupo existente con los mismos miembros, devolvemos su ID
+		return grupoExistenteID, errors.New("el grupo ya existe. ¿Quiere editarlo?")
+	}
+
+	// Si no se encontró un grupo existente, procedemos a crear uno nuevo
 	q := `
         INSERT INTO user_groups (iddueño, group_name, created_at, updated_at)
         VALUES ($1, $2, $3, $4)
         RETURNING id;
     `
-
 	var grupoID int
-	err := ur.Data.DB.QueryRowContext(
+	err = ur.Data.DB.QueryRowContext(
 		ctx, q, g.IDueño, g.Nombre, time.Now(), time.Now(),
 	).Scan(&grupoID)
 
@@ -64,9 +104,9 @@ func (ur *UserRepository) CrGrupo(ctx context.Context, g user.Grupo) (int, error
 		// Suponiendo que el ID del miembro está en contacto.ID
 		idMiembro := contacto.ID
 		q := `
-        INSERT INTO grupo_miembros (id_grupo, id_miembro)
-        VALUES ($1, $2)
-    	`
+            INSERT INTO grupo_miembros (id_grupo, id_miembro)
+            VALUES ($1, $2)
+        `
 		_, err := ur.Data.DB.ExecContext(ctx, q, grupoID, idMiembro)
 		if err != nil {
 			fmt.Println("Error al guardar Miembros del Grupo......", err)
@@ -74,8 +114,49 @@ func (ur *UserRepository) CrGrupo(ctx context.Context, g user.Grupo) (int, error
 			fmt.Println("----------- GUARDADO de Contactos al GRUPO EXITOSO......")
 		}
 	}
-	return grupoID, nil
 
+	return grupoID, nil
+}
+
+func gruposIguales(ctx context.Context, db *sql.DB, grupoID int, miembrosIDs []int) bool {
+	// Obtener la lista de IDs de miembros para el grupo existente
+	var miembrosGrupoExistente []int
+	q := `
+        SELECT id_miembro FROM grupo_miembros
+        WHERE id_grupo = $1
+    `
+	rows, err := db.QueryContext(ctx, q, grupoID)
+	if err != nil {
+		return false
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var miembroID int
+		err := rows.Scan(&miembroID)
+		if err != nil {
+			return false
+		}
+
+		miembrosGrupoExistente = append(miembrosGrupoExistente, miembroID)
+	}
+
+	// Verificar si las dos listas de miembros son iguales
+	return sliceIgual(miembrosIDs, miembrosGrupoExistente)
+}
+
+func sliceIgual(slice1 []int, slice2 []int) bool {
+	if len(slice1) != len(slice2) {
+		return false
+	}
+
+	for i := range slice1 {
+		if slice1[i] != slice2[i] {
+			return false
+		}
+	}
+
+	return true
 }
 
 // Recuperar Contactos
