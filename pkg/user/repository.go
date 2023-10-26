@@ -16,6 +16,7 @@ type Repository interface {
 	ConsultaPedidosContacto()
 	GetContactos(ctx context.Context, id uint) ([]int, error)
 	CrGrupo(ctx context.Context, g Grupo) (int, error)
+	TraeGrupos(ctx context.Context, id uint) ([]Grupo, error)
 
 	Create(ctx context.Context, user *User) error
 	Update(ctx context.Context, id uint, user User) error

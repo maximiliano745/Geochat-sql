@@ -12,6 +12,36 @@ type UserRepository struct {
 	Data *Data
 }
 
+// Trae Grupos
+func (ur *UserRepository) TraeGrupos(ctx context.Context, id uint) ([]user.Grupo, error) {
+	fmt.Print("\nTraerGrupos------------------------------------------------->")
+	var grupos []user.Grupo
+
+	// Consulta SQL para seleccionar los grupos donde el iddueño coincide con el id recibido
+	query := `
+        SELECT id, group_name FROM user_groups WHERE iddueño = $1;
+    `
+
+	rows, err := ur.Data.DB.QueryContext(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var grupo user.Grupo
+		if err := rows.Scan(&grupo.ID, &grupo.Nombre); err != nil {
+			return nil, err
+		}
+		grupos = append(grupos, grupo)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return grupos, nil
+}
+
 // Guardar Grupos
 func (ur *UserRepository) CrGrupo(ctx context.Context, g user.Grupo) (int, error) {
 	q := `
@@ -45,6 +75,7 @@ func (ur *UserRepository) CrGrupo(ctx context.Context, g user.Grupo) (int, error
 		}
 	}
 	return grupoID, nil
+
 }
 
 // Recuperar Contactos

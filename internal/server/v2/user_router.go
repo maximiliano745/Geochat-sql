@@ -84,7 +84,7 @@ func (ur *UserRouter) UserContactos(w http.ResponseWriter, r *http.Request) {
 		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
-	fmt.Println("del id: ", u.ID)
+	fmt.Println("Contactos del id: ", u.ID)
 
 	defer r.Body.Close()
 
@@ -322,6 +322,32 @@ func (ur *UserRouter) CrearGrupos(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, r, http.StatusOK, "Grupo creado exitosamente")
 }
 
+func (ur *UserRouter) VerGrupos(w http.ResponseWriter, r *http.Request) {
+	fmt.Print("\nVer Grupos----------------------------------------------->")
+	var u user.User
+	err := json.NewDecoder(r.Body).Decode(&u)
+
+	if err != nil {
+		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+	fmt.Println("Grupos del id: ", u.ID)
+
+	defer r.Body.Close()
+	ctx := r.Context()
+
+	grupos, err := ur.Repository.TraeGrupos(ctx, u.ID)
+	if err != nil {
+		response.HTTPError(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	fmt.Print("\nGrupos Viendo: ", grupos, "\n\n")
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(grupos)
+}
+
 // ****************     Definiendo rutas    ************************
 func (ur *UserRouter) Routes() http.Handler {
 	r := chi.NewRouter()
@@ -350,6 +376,7 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/contactos", ur.UserContactos)
 	r.Post("/verContactos", ur.VerContactos)
 	r.Post("/crearGrupos", ur.CrearGrupos)
+	r.Post("/vergrupos", ur.VerGrupos)
 
 	pool := websocket.NewPool()
 	go pool.Start()
