@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT pk_users PRIMARY KEY(id)
 );
 
+-- DROP TABLE if exists grupo_miembros cascade;
 -- DROP TABLE if exists user_groups cascade;
 --  DROP TABLE IF EXISTS user_groups;
 CREATE TABLE IF NOT EXISTS user_groups (

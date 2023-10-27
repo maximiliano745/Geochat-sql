@@ -47,6 +47,18 @@ func (ur *UserRepository) TraeGrupos(ctx context.Context, id uint) ([]user.Grupo
 // Guardar Grupos
 func (ur *UserRepository) CrGrupo(ctx context.Context, g user.Grupo) (int, error) {
 
+	// Verificar si ya existe un grupo con el mismo nombre
+	var nombreExistenteID int
+	qVerificarNombre := `
+        SELECT id FROM user_groups
+        WHERE iddueño = $1 AND group_name = $2
+    `
+	err := ur.Data.DB.QueryRowContext(ctx, qVerificarNombre, g.IDueño, g.Nombre).Scan(&nombreExistenteID)
+	if err == nil {
+		return nombreExistenteID, errors.New("nombre de grupo existente...... quiere editarlo...??")
+	} else if err != sql.ErrNoRows {
+		return 0, err
+	}
 	// Obtener la lista de IDs de miembros para el grupo a crear
 	var miembrosIDs []int
 	for _, contacto := range g.Contactos {
@@ -81,7 +93,7 @@ func (ur *UserRepository) CrGrupo(ctx context.Context, g user.Grupo) (int, error
 
 	if grupoExistenteID != 0 {
 		// Si encontramos un grupo existente con los mismos miembros, devolvemos su ID
-		return grupoExistenteID, errors.New("el grupo ya existe. ¿Quiere editarlo?")
+		return grupoExistenteID, errors.New("ya existe un grupo con los mismos miembros...... quiere editarlo...??")
 	}
 
 	// Si no se encontró un grupo existente, procedemos a crear uno nuevo
@@ -99,7 +111,7 @@ func (ur *UserRepository) CrGrupo(ctx context.Context, g user.Grupo) (int, error
 		return 0, err
 	}
 
-	fmt.Println("Miemobros a guardar: -------------------> ", g.Contactos)
+	fmt.Println("Miembros a guardar: -------------------> ", g.Contactos)
 	for _, contacto := range g.Contactos {
 		// Suponiendo que el ID del miembro está en contacto.ID
 		idMiembro := contacto.ID
