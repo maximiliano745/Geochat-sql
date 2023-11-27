@@ -348,6 +348,30 @@ func (ur *UserRouter) VerGrupos(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(grupos)
 }
 
+func (ur *UserRouter) TraeMiembrosGrupo(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Print("\nTrae Miembros de los Grupos----------------------------------------------->")
+	var u user.User
+	err := json.NewDecoder(r.Body).Decode(&u)
+
+	if err != nil {
+		response.HTTPError(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+	fmt.Println("************** Miembros de los Grupos del id:************* ", u.ID)
+	defer r.Body.Close()
+	ctx := r.Context()
+
+	miembros, err := ur.Repository.TraeGruposMiembros(ctx, u.ID)
+	if err != nil {
+		response.HTTPError(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(miembros)
+
+}
+
 // ****************     Definiendo rutas    ************************
 func (ur *UserRouter) Routes() http.Handler {
 	r := chi.NewRouter()
@@ -370,6 +394,8 @@ func (ur *UserRouter) Routes() http.Handler {
 	// 	ur.UserRepository.ConsultaPedidosContacto()
 	// }()
 
+	// Roles
+
 	r.Post("/login", ur.UserLogin)
 	r.Post("/register", ur.UserSignup) // /api/v2/users/
 	r.Post("/api/user/mail", ur.UserMail)
@@ -377,6 +403,7 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/verContactos", ur.VerContactos)
 	r.Post("/crearGrupos", ur.CrearGrupos)
 	r.Post("/vergrupos", ur.VerGrupos)
+	r.Post("/traerMiembrosGrupo", ur.TraeMiembrosGrupo)
 
 	pool := websocket.NewPool()
 	go pool.Start()

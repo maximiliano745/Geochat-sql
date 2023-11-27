@@ -14,6 +14,116 @@ type UserRepository struct {
 	Data *Data
 }
 
+// Roles
+func (ur *UserRepository) GetUserRoles(ctx context.Context, userID uint) ([]user.UserRole, error) {
+	roles := []user.UserRole{}
+
+	rows, err := ur.Data.DB.QueryContext(ctx, "SELECT user_id, role_id FROM USER_ROLE WHERE user_id = $1", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var role user.UserRole
+		if err := rows.Scan(&role.UserID, &role.RolesID); err != nil {
+			return nil, err
+		}
+		roles = append(roles, role)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return roles, nil
+}
+
+func (ur *UserRepository) SaveUserRole(ctx context.Context, userID uint, roleID uint) error {
+	roles, err := ur.GetUserRoles(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range roles {
+		if r.RolesID == roleID {
+			fmt.Println("El rol ya existe en este usuario....")
+			return nil
+		}
+	}
+
+	fmt.Print("\nSave User Role...")
+	query := `
+		INSERT INTO USER_ROLES(user_id, role_id) VALUES($1, $2);
+	`
+	_, err = ur.Data.DB.ExecContext(ctx, query, userID, roleID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (ur *UserRepository) RemoveUserRole(ctx context.Context, userID uint, roleID uint) error {
+	fmt.Print("\nSave User Role...")
+	query := `
+		DELETE FROM USER_ROLES WHERE user_id = $1 AND role_id = $2;
+	`
+	_, err := ur.Data.DB.ExecContext(ctx, query, userID, roleID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Trae Miembros Grupo
+func (ur *UserRepository) TraeGruposMiembros(ctx context.Context, id uint) ([]user.PartialUser, error) {
+	var users []user.User
+
+	// Consulta para obtener los ID de los miembros del grupo dado
+	query := `
+        SELECT id_miembro FROM grupo_miembros WHERE id_grupo = $1;
+    `
+	rows, err := ur.Data.DB.QueryContext(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var idMiembro uint
+		if err := rows.Scan(&idMiembro); err != nil {
+			return nil, err
+		}
+
+		// Consulta para obtener los usuarios por ID
+		usuario, err := ur.GetOne(ctx, idMiembro)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, usuario)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Convertir los usuarios a PartialUser
+	var partialUsers []user.PartialUser
+	for _, u := range users {
+		partialUser := user.PartialUser{
+			ID:       u.ID,
+			Username: u.Username,
+		}
+		partialUsers = append(partialUsers, partialUser)
+	}
+
+	fmt.Println("******  Grupo Miembros: ", partialUsers)
+
+	return partialUsers, nil
+
+}
+
 // Trae Grupos
 func (ur *UserRepository) TraeGrupos(ctx context.Context, id uint) ([]user.Grupo, error) {
 	fmt.Print("\nTraerGrupos------------------------------------------------->")

@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- DROP TABLE if exists grupo_miembros cascade;
 -- DROP TABLE if exists user_groups cascade;
 --  DROP TABLE IF EXISTS user_groups;
+
 CREATE TABLE IF NOT EXISTS user_groups (
 -- CREATE TABLE user_groups (
     id serial NOT NULL,
@@ -46,3 +47,30 @@ CREATE TABLE IF NOT EXISTS grupo_miembros (
     FOREIGN KEY (id_grupo) REFERENCES user_groups(id),
     FOREIGN KEY (id_miembro) REFERENCES users(id)
 );
+
+
+-- CREATE TABLE IF NOT EXISTS ROLES (
+--     id SERIAL PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL
+-- );
+
+CREATE TABLE IF NOT EXISTS ROLES (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) UNIQUE NOT NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS ROLE_USER (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    role_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (role_id) REFERENCES roles(id)
+);
+
+--ALTER TABLE ROLES ADD CONSTRAINT unique_role_name UNIQUE (name);
+-- ALTER TABLE ROLES DROP CONSTRAINT unique_role_name;
+
+INSERT INTO ROLES (name) VALUES ('maxi') ON CONFLICT DO NOTHING;
+INSERT INTO ROLES (name) VALUES ('dueño_grupo') ON CONFLICT DO NOTHING;
+INSERT INTO ROLES (name) VALUES ('usuario_grupo') ON CONFLICT DO NOTHING;

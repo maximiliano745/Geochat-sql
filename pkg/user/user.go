@@ -7,7 +7,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// User of the system.
+type GrupoMiembros struct {
+	NombreGrupo    string     `json:"nombregrupo"`
+	IdGrupo        uint       `json:"idgrupo"`
+	Iddueño        uint       `json:"iddueño"`
+	ContactosGrupo []Contacto `json:"contactosgrupo"`
+}
+
 type Grupo struct {
 	Nombre    string     `json:"nombre"`
 	ID        uint       `json:"id"`
@@ -20,6 +26,11 @@ type Contacto struct {
 	Nombre string `json:"nombre"`
 }
 
+type PartialUser struct {
+	ID       uint   `json:"id,omitempty"`
+	Username string `json:"username,omitempty"`
+}
+
 type User struct {
 	ID        uint      `json:"id,omitempty"`
 	Username  string    `json:"username,omitempty"`
@@ -28,6 +39,11 @@ type User struct {
 	Hash      string    `json:"hash,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+}
+
+type UserRole struct {
+	UserID  uint `json:"user_id,omitempty"`
+	RolesID uint `json:"roles_id,omitempty"`
 }
 
 func (u *User) HashPassword() error {
