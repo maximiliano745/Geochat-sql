@@ -412,9 +412,9 @@ func (ur *UserRouter) Routes() http.Handler {
 		websocketHandler(w, r, pool)
 	})
 
-	// r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
-	// 	websocketHandler(w, r, pool)
-	// })
+	//r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+	//	websocketHandler(w, r, pool)
+	//})
 
 	return r
 }
