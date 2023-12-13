@@ -18,7 +18,8 @@ import (
 	"github.com/github.com/maximiliano745/Geochat-sql/pkg/websocket"
 	"github.com/go-chi/chi"
 	"golang.org/x/crypto/bcrypt"
-	//"github.com/maximiliano745/Geochat-sql/internal/server/v2/serverrtc"
+
+	serverrtc "github.com/github.com/maximiliano745/Geochat-sql/internal/server/v2/serverrtc"
 )
 
 type UserRouter struct {
@@ -155,7 +156,6 @@ func (ur *UserRouter) UserMail(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Error: ", err)
 		}
 	}
-
 }
 
 func (ur *UserRouter) UserLogin(w http.ResponseWriter, r *http.Request) {
@@ -206,7 +206,6 @@ func (ur *UserRouter) UserLogin(w http.ResponseWriter, r *http.Request) {
 		//w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func (ur *UserRouter) UserSignup(w http.ResponseWriter, r *http.Request) {
@@ -365,7 +364,6 @@ func (ur *UserRouter) TraeMiembrosGrupo(w http.ResponseWriter, r *http.Request) 
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(miembros)
-
 }
 
 // ****************     Definiendo rutas    ************************
@@ -401,8 +399,8 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/vergrupos", ur.VerGrupos)
 	r.Post("/traerMiembrosGrupo", ur.TraeMiembrosGrupo)
 
-	// r.Post("/create", serverrtc.CreateRoomRequestHandle)
-	// r.Post("/join", serverrtc.JoinRoomRequestHandle)
+	r.Post("/create", serverrtc.CreateRoomRequestHandle)
+	r.Post("/join", serverrtc.JoinRoomRequestHandle)
 
 	pool := websocket.NewPool()
 	go pool.Start()
