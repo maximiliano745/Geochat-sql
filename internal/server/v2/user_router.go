@@ -13,16 +13,12 @@ import (
 	"net/http"
 	"net/smtp"
 
-	//"time"
-
-	//"strconv"
-
-	//"github.com/github.com/maximiliano745/Geochat-sql/internal/data"
 	"github.com/github.com/maximiliano745/Geochat-sql/pkg/response"
 	"github.com/github.com/maximiliano745/Geochat-sql/pkg/user"
 	"github.com/github.com/maximiliano745/Geochat-sql/pkg/websocket"
 	"github.com/go-chi/chi"
 	"golang.org/x/crypto/bcrypt"
+	//"github.com/maximiliano745/Geochat-sql/internal/server/v2/serverrtc"
 )
 
 type UserRouter struct {
@@ -404,6 +400,9 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/crearGrupos", ur.CrearGrupos)
 	r.Post("/vergrupos", ur.VerGrupos)
 	r.Post("/traerMiembrosGrupo", ur.TraeMiembrosGrupo)
+
+	// r.Post("/create", serverrtc.CreateRoomRequestHandle)
+	// r.Post("/join", serverrtc.JoinRoomRequestHandle)
 
 	pool := websocket.NewPool()
 	go pool.Start()
