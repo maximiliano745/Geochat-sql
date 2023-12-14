@@ -366,6 +366,62 @@ func (ur *UserRouter) TraeMiembrosGrupo(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(miembros)
 }
 
+var (
+	usersActive       = make(map[string]time.Time)
+	tiempoInactividad = 1 * time.Minute // Establecer un tiempo de inactividad de 1 minutos (ajusta según necesites)
+)
+
+func (ur *UserRouter) keepAliveHandler(w http.ResponseWriter, r *http.Request) {
+
+	// Decodificar el cuerpo JSON de la solicitud
+	var requestBody map[string]string
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Obtener el userID del cuerpo de la solicitud
+	userID := requestBody["userID"]
+
+	// Actualizar el tiempo de la última actividad del usuario
+	usersActive[userID] = time.Now()
+
+	// Verificar si el usuario está inactivo
+	ahora := time.Now()
+	tiempoInactivo := ahora.Sub(usersActive[userID])
+	if tiempoInactivo > tiempoInactividad {
+		delete(usersActive, userID)
+		log.Printf("El usuario %s está inactivo.", userID)
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("El usuario está inactivo"))
+		return
+	}
+
+	// Si el usuario está activo, responder al frontend
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Usuario activo actualizado"))
+
+}
+
+func verificarInactividad() {
+	for {
+		time.Sleep(tiempoInactividad)
+
+		ahora := time.Now()
+
+		for userID, lastActivity := range usersActive {
+			tiempoInactivo := ahora.Sub(lastActivity)
+
+			if tiempoInactivo > tiempoInactividad {
+				delete(usersActive, userID)
+				log.Printf("El usuario %s está inactivo.", userID)
+				// Aquí puedes realizar acciones adicionales, como cerrar su sesión, notificar, etc.
+			}
+		}
+	}
+}
+
 // ****************     Definiendo rutas    ************************
 func (ur *UserRouter) Routes() http.Handler {
 	r := chi.NewRouter()
@@ -375,20 +431,26 @@ func (ur *UserRouter) Routes() http.Handler {
 	var wg sync.WaitGroup
 
 	// Inicia la tarea HaciendoTarea en segundo plano
-	wg.Add(1)
+	wg.Add(2)
 	go func() {
 		defer wg.Done()
 		ur.HaciendoTarea()
 	}()
 
-	//Inicia la tarea ConsultaPedidosContacto en segundo plano
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	ur.UserRepository.ConsultaPedidosContacto()
-	// }()
+	// Goroutine para verificar inactividad cada 1 minuto
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop() // Detener el ticker al finalizar la función principal
+
+	go func() {
+		defer wg.Done()
+		for range ticker.C {
+			verificarInactividad()
+		}
+	}()
 
 	// Roles
+	// Ruta para manejar el control de usuarios conectados
+	r.Post("/keep-alive", ur.keepAliveHandler) // Ruta para ver si esta activo
 
 	r.Post("/login", ur.UserLogin)
 	r.Post("/register", ur.UserSignup) // /api/v2/users/
