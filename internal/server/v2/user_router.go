@@ -422,6 +422,49 @@ func verificarInactividad() {
 	}
 }
 
+// Método para verificar si un usuario está conectado
+func (ur *UserRouter) estaConectado(userID string) bool {
+	_, ok := usersActive[userID]
+	return ok
+}
+
+func (ur *UserRouter) Coneccion(w http.ResponseWriter, r *http.Request) {
+	// Obtener el ID del cuerpo de la solicitud POST
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Error al analizar los datos de la solicitud", http.StatusBadRequest)
+		return
+	}
+
+	userID := r.FormValue("userID")
+	if userID == "" {
+		http.Error(w, "ID de usuario no proporcionado en la solicitud", http.StatusBadRequest)
+		return
+	}
+
+	// Verificar si el usuario está conectado
+	conectado := ur.estaConectado(userID)
+
+	// Preparar la respuesta como JSON
+	respuesta := struct {
+		Conectado bool `json:"conectado"`
+	}{
+		Conectado: conectado,
+	}
+
+	// Convertir la respuesta a JSON
+	respuestaJSON, err := json.Marshal(respuesta)
+	if err != nil {
+		http.Error(w, "Error al generar la respuesta JSON", http.StatusInternalServerError)
+		return
+	}
+
+	// Establecer encabezado y escribir la respuesta
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(respuestaJSON)
+}
+
 // ****************     Definiendo rutas    ************************
 func (ur *UserRouter) Routes() http.Handler {
 	r := chi.NewRouter()
@@ -461,6 +504,7 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/vergrupos", ur.VerGrupos)
 	r.Post("/traerMiembrosGrupo", ur.TraeMiembrosGrupo)
 
+	r.Post("/coneccion", ur.Coneccion) // recibe el id debuelve truue o false
 	r.Post("/create", serverrtc.CreateRoomRequestHandle)
 	r.Post("/join", serverrtc.JoinRoomRequestHandle)
 
