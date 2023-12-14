@@ -401,7 +401,6 @@ func (ur *UserRouter) keepAliveHandler(w http.ResponseWriter, r *http.Request) {
 	// Si el usuario está activo, responder al frontend
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Usuario activo actualizado"))
-
 }
 
 func verificarInactividad() {
@@ -422,12 +421,36 @@ func verificarInactividad() {
 	}
 }
 
-// Método para verificar si un usuario está conectado
+func (ur *UserRouter) AgregarUsuarioActivo(w http.ResponseWriter, r *http.Request) {
+	var requestBody map[string]string
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userID := requestBody["userID"]
+
+	// Verificar si el usuario ya está en el mapa usersActive
+	if _, ok := usersActive[userID]; ok {
+		// Si el usuario ya existe, actualizar su tiempo de actividad
+		usersActive[userID] = time.Now()
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Tiempo de actividad del usuario actualizado"))
+	} else {
+		// Si el usuario no existe, agregarlo al mapa con el tiempo actual
+		usersActive[userID] = time.Now()
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Usuario agregado a usersActive"))
+	}
+}
+
 func (ur *UserRouter) estaConectado(userID string) bool {
 	_, ok := usersActive[userID]
 	return ok
 }
 
+// recibe el id debuelve true o false
 func (ur *UserRouter) Coneccion(w http.ResponseWriter, r *http.Request) {
 	// Obtener el ID del cuerpo de la solicitud POST
 	err := r.ParseForm()
@@ -493,7 +516,7 @@ func (ur *UserRouter) Routes() http.Handler {
 
 	// Roles
 	// Ruta para manejar el control de usuarios conectados
-	r.Post("/keep-alive", ur.keepAliveHandler) // Ruta para ver si esta activo
+	r.Post("/keep-alive", ur.keepAliveHandler) // Ver si el usuario actual esta activo tarea cada 5 segundos
 
 	r.Post("/login", ur.UserLogin)
 	r.Post("/register", ur.UserSignup) // /api/v2/users/
@@ -504,7 +527,8 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/vergrupos", ur.VerGrupos)
 	r.Post("/traerMiembrosGrupo", ur.TraeMiembrosGrupo)
 
-	r.Post("/coneccion", ur.Coneccion) // recibe el id debuelve truue o false
+	r.Post("/agregarActivo", ur.AgregarUsuarioActivo) // cuando se loguea
+	r.Post("/coneccion", ur.Coneccion)                // recibe el id debuelve true o false Consulta x id
 	r.Post("/create", serverrtc.CreateRoomRequestHandle)
 	r.Post("/join", serverrtc.JoinRoomRequestHandle)
 
