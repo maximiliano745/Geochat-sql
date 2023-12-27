@@ -367,6 +367,8 @@ func (ur *UserRouter) TraeMiembrosGrupo(w http.ResponseWriter, r *http.Request) 
 }
 
 var (
+	// Usamos un Mutex para acceder de manera segura al mapa usersActive
+	mu                sync.RWMutex
 	usersActive       = make(map[string]time.Time)
 	tiempoInactividad = 1 * time.Minute // Establecer un tiempo de inactividad de 1 minutos (ajusta según necesites)
 )
@@ -443,6 +445,40 @@ func (ur *UserRouter) AgregarUsuarioActivo(w http.ResponseWriter, r *http.Reques
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Usuario agregado a usersActive"))
 	}
+}
+
+// Handler para obtener los usuarios activos
+
+func (ur *UserRouter) VerActivos(w http.ResponseWriter, r *http.Request) {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	// Crear una estructura para almacenar los usuarios activos
+	var activeUsers []string
+
+	// Obtener la lista de usuarios activos
+	for userID := range usersActive {
+		activeUsers = append(activeUsers, userID)
+	}
+
+	// Crear la respuesta JSON
+	response := struct {
+		ActiveUsers []string `json:"activeUsers"`
+	}{
+		ActiveUsers: activeUsers,
+	}
+
+	// Convertir la respuesta a JSON
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, "Error al generar la respuesta JSON", http.StatusInternalServerError)
+		return
+	}
+
+	// Establecer encabezados y enviar la respuesta
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(jsonResponse)
 }
 
 func (ur *UserRouter) estaConectado(userID string) bool {
@@ -527,6 +563,7 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/vergrupos", ur.VerGrupos)
 	r.Post("/traerMiembrosGrupo", ur.TraeMiembrosGrupo)
 
+	r.Post("/active-users", ur.VerActivos)
 	r.Post("/agregarActivo", ur.AgregarUsuarioActivo) // cuando se loguea
 	r.Post("/coneccion", ur.Coneccion)                // recibe el id debuelve true o false Consulta x id
 	r.Post("/create", serverrtc.CreateRoomRequestHandle)
