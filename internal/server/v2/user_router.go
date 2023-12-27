@@ -563,7 +563,7 @@ func (ur *UserRouter) Routes() http.Handler {
 	r.Post("/vergrupos", ur.VerGrupos)
 	r.Post("/traerMiembrosGrupo", ur.TraeMiembrosGrupo)
 
-	r.Post("/active-users", ur.VerActivos)
+	r.Post("/activeUsers", ur.VerActivos)
 	r.Post("/agregarActivo", ur.AgregarUsuarioActivo) // cuando se loguea
 	r.Post("/coneccion", ur.Coneccion)                // recibe el id debuelve true o false Consulta x id
 	r.Post("/create", serverrtc.CreateRoomRequestHandle)
